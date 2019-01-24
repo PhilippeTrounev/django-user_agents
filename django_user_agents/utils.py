@@ -43,16 +43,18 @@ def get_user_agent(request):
     # from scratch because parsing regexes.yaml/json (ua-parser) is slow
     if not hasattr(request, 'META'):
         return ''
-
-    ua_string = request.META.get('HTTP_USER_AGENT', '')
-    if cache:
-        key = get_cache_key(ua_string)
-        user_agent = cache.get(key)
-        if user_agent is None:
+    try:
+        ua_string = request.META.get('HTTP_USER_AGENT', '')
+        if cache:
+            key = get_cache_key(ua_string)
+            user_agent = cache.get(key)
+            if user_agent is None:
+                user_agent = parse(ua_string)
+                cache.set(key, user_agent)
+        else:
             user_agent = parse(ua_string)
-            cache.set(key, user_agent)
-    else:
-        user_agent = parse(ua_string)
+    except Exception:
+        user_agent = 'Bot' 
     return user_agent
 
 
